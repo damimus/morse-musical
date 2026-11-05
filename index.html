@@ -439,6 +439,61 @@ button {
     margin-left: 0.12em;
     margin-right: 0.12em;
 }
+
+.botones {
+    flex-wrap: wrap;
+}
+.botones button {
+    border: 1px solid transparent;
+    transition: background-color .15s, border-color .15s, transform .15s;
+}
+.botones button:hover {
+    transform: translateY(-1px);
+}
+.boton-morse {
+    background: #eaf3ff;
+    border-color: #cfe2ff !important;
+    color: #234a76;
+}
+.boton-morse:hover {
+    background: #dcecff;
+}
+.boton-ritmo {
+    background: #f1ecff;
+    border-color: #ddd2ff !important;
+    color: #514078;
+}
+.boton-ritmo:hover {
+    background: #e8deff;
+}
+.boton-melodia {
+    background: #eaf6ed;
+    border-color: #cfe8d5 !important;
+    color: #315a3b;
+}
+.boton-melodia:hover {
+    background: #dff0e3;
+}
+.boton-borrar {
+    background: #f1f3f5;
+    border-color: #dfe3e8 !important;
+    color: #4b5563;
+}
+.boton-borrar:hover {
+    background: #e7eaee;
+}
+#resultado {
+    background: #f5f9ff;
+    border-color: #dceaff;
+}
+.seccion-ritmo .linea-salida {
+    background: #faf8ff;
+    border-color: #e5dcff;
+}
+.seccion-melodia .linea-salida {
+    background: #f6fbf7;
+    border-color: #d8eadc;
+}
 </style>
 
 </head>
@@ -448,20 +503,20 @@ button {
 <div class="subtitulo">Escribe un nombre o una palabra</div>
 <textarea id="entrada" oninput="mostrarMorse()" class="entrada" placeholder="Escribe aquí..." autofocus></textarea>
 <div class="botones">
-    <button onclick="reproducirMorse()">▶ Play</button>
-    <button onclick="reproducirRitmo()">🥁 Ritmo</button>
-    <button id="btnGenerarMelodia" onclick="generarMelodia()">🎲 Generar melodía</button>
-    <button id="btnNotas" onclick="reproducirNotas()" disabled>🎵 Notas</button>
-    <button onclick="borrarTexto()">🗑 Borrar</button>
+    <button class="boton-morse" onclick="reproducirMorse()">▶ Play</button>
+    <button class="boton-ritmo" onclick="reproducirRitmo()">🥁 Play ritmo</button>
+    <button id="btnGenerarMelodia" class="boton-melodia" onclick="generarMelodia()">🎲 Generar melodía</button>
+    <button id="btnNotas" class="boton-melodia" onclick="reproducirNotas()" disabled>🎵 Play notas</button>
+    <button class="boton-borrar" onclick="borrarTexto()">🗑 Borrar</button>
 </div>
 <div id="resultado" class="resultado"><div class="vacio">El código Morse aparecerá aquí</div></div>
 
-<div class="seccion-salida">
+<div class="seccion-salida seccion-ritmo">
     <div class="titulo-salida">Ritmo continuo</div>
     <div id="ritmo" class="linea-salida"></div>
 </div>
 
-<div class="seccion-salida">
+<div class="seccion-salida seccion-melodia">
     <div class="titulo-salida">Melodía aleatoria · Do mayor</div>
     <div id="melodia" class="linea-salida"></div>
 </div>
@@ -822,7 +877,7 @@ async function reproducirNotas() {
 
     window.reproduciendoNotas = false;
     window.detenerNotas = false;
-    boton.textContent = "🎵 Notas";
+    boton.textContent = "🎵 Play notas";
 }
 
 function borrarTexto(){document.getElementById("entrada").value="";mostrarMorse();document.getElementById("entrada").focus();}
