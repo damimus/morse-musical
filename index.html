@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Juego Morse Musical</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f3f7fb;color:#1f2937;min-height:100vh;display:flex;justify-content:center;align-items:flex-start;padding:40px 20px}
+.contenedor{width:100%;max-width:1100px;background:white;border-radius:20px;padding:35px;box-shadow:0 8px 30px rgba(0,0,0,.12)}
+h1{text-align:center;margin-top:0;font-size:36px;color:#2563eb}
+.subtitulo{text-align:center;font-size:18px;color:#64748b;margin-bottom:30px}
+.entrada{width:100%;min-height:100px;resize:vertical;border:3px solid #93c5fd;border-radius:14px;padding:20px;font-size:30px;outline:none;text-align:center;transition:.2s}
+.entrada:focus{border-color:#2563eb;box-shadow:0 0 0 4px rgba(37,99,235,.12)}
+.botones{display:flex;justify-content:center;gap:15px;margin:20px 0 35px}
+button{border:none;border-radius:10px;padding:12px 25px;font-size:18px;cursor:pointer;font-weight:bold;background:#2563eb;color:white}
+button:hover{background:#1d4ed8}
+.resultado{min-height:180px;border:2px solid #dbeafe;border-radius:15px;background:#f8fbff;padding:30px 20px;overflow-x:auto}
+.fila{display:flex;justify-content:center;align-items:flex-end;flex-wrap:wrap;gap:5px;margin-bottom:18px}
+.caracter{display:inline-flex;flex-direction:column;align-items:center;justify-content:flex-end;min-width:55px;padding:5px}
+.morse{min-height:42px;font-size:25px;font-weight:bold;color:#dc2626;white-space:nowrap;margin-bottom:8px}
+.letra{font-size:32px;font-weight:bold;color:#111827;min-height:40px}
+.separador-palabra{width:35px}
+.vacio{text-align:center;color:#94a3b8;font-size:22px;padding:40px 10px}
+.ritmo-linea{margin-top:28px;padding:18px 12px;border-top:2px solid #dbeafe;text-align:center;font-size:30px;font-weight:bold;letter-spacing:4px;color:#7c3aed;white-space:nowrap;overflow-x:auto}
+.ritmo-titulo{text-align:center;font-size:16px;color:#64748b;margin-bottom:8px;letter-spacing:0}
+.notas-linea{margin-top:14px;padding:14px 12px;border-top:2px solid #e5e7eb;text-align:center;font-size:25px;font-weight:bold;letter-spacing:2px;color:#059669;white-space:nowrap;overflow-x:auto}
+.notas-titulo{text-align:center;font-size:16px;color:#64748b;margin-bottom:8px;letter-spacing:0}
+@media(max-width:700px){.contenedor{padding:20px}h1{font-size:28px}.entrada{font-size:24px}.caracter{min-width:45px}.morse{font-size:20px}.letra{font-size:27px}}
+</style>
+<style>
+.seccion-salida {
+    margin-top: 18px;
+    text-align: center;
+}
+.titulo-salida {
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+.linea-salida {
+    min-height: 34px;
+    font-size: 1.35rem;
+    letter-spacing: 4px;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: #fafafa;
+}
+</style>
+
+<style>
+.resultado {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 18px;
+    overflow-x: auto;
+    width: 100%;
+}
+.bloque {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 0 0 auto;
+    min-width: 34px;
+}
+.codigo {
+    color: #d00000;
+    font-weight: bold;
+    font-size: 1.35rem;
+    min-height: 30px;
+    white-space: nowrap;
+}
+.letra {
+    color: #222;
+    font-size: 1.15rem;
+    margin-top: 4px;
+}
+</style>
+
+
+<style>
+/* Código Morse grande */
+.codigo {
+    color: #d00000;
+    font-weight: bold;
+    font-size: 2.4rem;
+    line-height: 1.15;
+    min-height: 48px;
+    white-space: nowrap;
+}
+
+/* Letras */
+.letra {
+    color: #222;
+    font-size: 1.45rem;
+    font-weight: bold;
+    margin-top: 6px;
+}
+
+/* Casilla de Morse */
+.resultado {
+    min-height: 210px;
+    padding: 35px 25px;
+}
+
+/* Ritmo continuo grande */
+.seccion-salida .linea-salida {
+    font-size: 2.4rem;
+    font-weight: bold;
+    letter-spacing: 8px;
+    line-height: 1.3;
+    min-height: 58px;
+    padding: 15px 18px;
+}
+
+/* Melodía también visible y grande */
+#melodia {
+    font-size: 1.8rem;
+    font-weight: bold;
+    letter-spacing: 3px;
+    min-height: 50px;
+}
+</style>
+
+
+<style>
+#melodia {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 14px;
+    letter-spacing: normal;
+}
+.nota-melodia {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    min-width: 58px;
+    line-height: 1.1;
+}
+.figura-nota {
+    display: block;
+    font-family: "Times New Roman", "DejaVu Serif", serif;
+    font-size: 2.2rem;
+    line-height: 1;
+    height: 38px;
+}
+.nombre-nota {
+    display: block;
+    font-size: 1.35rem;
+    font-weight: bold;
+    margin-top: 5px;
+}
+</style>
+
+
+<style>
+.morse {
+    font-size: 42px !important;
+    min-height: 58px !important;
+    line-height: 1.15;
+    font-weight: 800;
+}
+.ritmo-linea {
+    font-size: 48px !important;
+    font-weight: 800;
+    letter-spacing: 10px;
+    line-height: 1.3;
+    padding: 24px 16px;
+    min-height: 82px;
+}
+</style>
+
+
+<style>
+/* =========================
+   DISEÑO RESPONSIVE
+   ========================= */
+
+/* El contenedor aprovecha el ancho disponible */
+.contenedor {
+    width: min(100%, 1100px);
+}
+
+/* La fila de Morse se adapta al ancho */
+.fila {
+    width: 100%;
+    gap: clamp(2px, 0.6vw, 8px);
+}
+
+/* Cada carácter ocupa solo el espacio necesario */
+.caracter {
+    min-width: clamp(28px, 5vw, 55px);
+    padding: clamp(2px, 0.5vw, 5px);
+}
+
+/* Morse: grande en ordenador, progresivamente menor en pantallas pequeñas */
+.morse {
+    font-size: clamp(18px, 4vw, 42px) !important;
+    min-height: clamp(30px, 6vw, 58px) !important;
+    line-height: 1.05;
+    margin-bottom: clamp(3px, 0.8vw, 8px);
+}
+
+/* Letras también se adaptan */
+.letra {
+    font-size: clamp(20px, 3.2vw, 32px) !important;
+    min-height: clamp(28px, 5vw, 40px);
+}
+
+/* La ventana de resultados ocupa siempre todo el ancho */
+.resultado {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: clamp(15px, 3vw, 35px) clamp(8px, 2vw, 25px);
+}
+
+/* Ritmo: tamaño adaptable y caja que nunca se sale de la pantalla */
+.ritmo-linea {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    font-size: clamp(24px, 5vw, 48px) !important;
+    letter-spacing: clamp(2px, 1.2vw, 10px);
+    line-height: 1.2;
+    padding: clamp(12px, 2.5vw, 24px) clamp(8px, 2vw, 16px);
+    min-height: clamp(55px, 10vw, 82px);
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+}
+
+/* La ventana de melodía también se adapta */
+.notas-linea {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow-x: auto;
+}
+
+/* Botones adaptables */
+.botones {
+    flex-wrap: wrap;
+}
+
+button {
+    font-size: clamp(14px, 2vw, 18px);
+    padding: clamp(9px, 1.5vw, 12px) clamp(12px, 2.5vw, 25px);
+}
+
+/* En móvil: aprovechamos prácticamente todo el ancho */
+@media (max-width: 700px) {
+    body {
+        padding: 10px;
+    }
+
+    .contenedor {
+        padding: 15px;
+        border-radius: 14px;
+    }
+
+    .entrada {
+        min-height: 80px;
+        padding: 12px;
+    }
+
+    .fila {
+        justify-content: flex-start;
+    }
+
+    .caracter {
+        min-width: clamp(25px, 8vw, 42px);
+    }
+
+    .morse {
+        font-size: clamp(16px, 6vw, 28px) !important;
+    }
+
+    .letra {
+        font-size: clamp(18px, 5vw, 27px) !important;
+    }
+
+    .ritmo-linea {
+        font-size: clamp(22px, 7vw, 36px) !important;
+        letter-spacing: clamp(1px, 1.5vw, 6px);
+    }
+}
+
+/* Pantallas muy pequeñas */
+@media (max-width: 400px) {
+    .contenedor {
+        padding: 10px;
+    }
+
+    .morse {
+        font-size: clamp(14px, 5.5vw, 22px) !important;
+    }
+
+    .letra {
+        font-size: clamp(16px, 5vw, 22px) !important;
+    }
+
+    .ritmo-linea {
+        font-size: clamp(19px, 7vw, 30px) !important;
+    }
+
+    .botones {
+        gap: 8px;
+    }
+
+    button {
+        width: 100%;
+    }
+}
+</style>
+
+
+<style>
+/* Símbolos Morse especialmente grandes y claros */
+.morse {
+    font-family: Arial, Helvetica, sans-serif !important;
+    font-size: clamp(28px, 6vw, 56px) !important;
+    font-weight: 900 !important;
+    letter-spacing: clamp(4px, 1.2vw, 10px) !important;
+    line-height: 1 !important;
+    min-height: clamp(42px, 7vw, 68px) !important;
+    color: #dc2626 !important;
+    text-shadow: 0 1px 0 rgba(0,0,0,.08);
+}
+
+/* El punto y la raya se distinguen mejor individualmente */
+.morse .punto,
+.morse .raya {
+    display: inline-block;
+    font-weight: 900;
+}
+
+/* Ritmo continuo todavía más visual */
+.ritmo-linea {
+    font-family: Arial, Helvetica, sans-serif !important;
+    font-size: clamp(34px, 7vw, 60px) !important;
+    font-weight: 900 !important;
+    letter-spacing: clamp(4px, 1.5vw, 12px) !important;
+    line-height: 1.1 !important;
+    min-height: clamp(70px, 12vw, 100px) !important;
+    padding: clamp(15px, 3vw, 28px) !important;
+}
+
+/* En pantallas pequeñas seguimos priorizando la legibilidad */
+@media (max-width: 500px) {
+    .morse {
+        font-size: clamp(25px, 8vw, 42px) !important;
+        letter-spacing: clamp(3px, 1.5vw, 7px) !important;
+    }
+
+    .ritmo-linea {
+        font-size: clamp(30px, 9vw, 48px) !important;
+    }
+}
+</style>
+
+
+<style>
+/* Un poco más grandes todavía */
+.morse {
+    font-size: clamp(34px, 7vw, 66px) !important;
+    font-weight: 900 !important;
+    letter-spacing: clamp(5px, 1.5vw, 12px) !important;
+    min-height: clamp(48px, 8vw, 76px) !important;
+}
+
+.ritmo-linea {
+    font-size: clamp(40px, 8vw, 70px) !important;
+    font-weight: 900 !important;
+    letter-spacing: clamp(5px, 1.8vw, 14px) !important;
+    min-height: clamp(78px, 14vw, 112px) !important;
+}
+
+@media (max-width: 500px) {
+    .morse {
+        font-size: clamp(30px, 9vw, 48px) !important;
+        letter-spacing: clamp(4px, 1.8vw, 8px) !important;
+    }
+
+    .ritmo-linea {
+        font-size: clamp(34px, 10vw, 52px) !important;
+    }
+}
+</style>
+
+
+<style>
+/* Rayas del código Morse un poco más largas visualmente */
+.raya-morse {
+    display: inline-block;
+    transform: scaleX(1.45);
+    transform-origin: center;
+    margin-left: 0.12em;
+    margin-right: 0.12em;
+}
+
+.punto-morse {
+    display: inline-block;
+}
+</style>
+
+
+<style>
+/* Ritmo continuo: mismo tamaño y disposición visual que el código Morse,
+   pero en negro */
+.ritmo-linea {
+    color: #000 !important;
+}
+
+.punto-ritmo,
+.raya-ritmo {
+    display: inline-block;
+    color: #000 !important;
+    font-weight: 900;
+    line-height: 1;
+}
+
+.punto-ritmo {
+    transform: none;
+    margin-left: 0.12em;
+    margin-right: 0.12em;
+}
+
+.raya-ritmo {
+    transform: scaleX(1.45);
+    transform-origin: center;
+    margin-left: 0.12em;
+    margin-right: 0.12em;
+}
+</style>
+
+</head>
+<body>
+<div class="contenedor">
+<h1>📡 Morse Musical</h1>
+<div class="subtitulo">Escribe un nombre o una palabra</div>
+<textarea id="entrada" oninput="mostrarMorse()" class="entrada" placeholder="Escribe aquí..." autofocus></textarea>
+<div class="botones">
+    <button onclick="reproducirMorse()">▶ Play</button>
+    <button onclick="reproducirRitmo()">🥁 Ritmo</button>
+    <button id="btnGenerarMelodia" onclick="generarMelodia()">🎲 Generar melodía</button>
+    <button id="btnNotas" onclick="reproducirNotas()" disabled>🎵 Notas</button>
+    <button onclick="borrarTexto()">🗑 Borrar</button>
+</div>
+<div id="resultado" class="resultado"><div class="vacio">El código Morse aparecerá aquí</div></div>
+
+<div class="seccion-salida">
+    <div class="titulo-salida">Ritmo continuo</div>
+    <div id="ritmo" class="linea-salida"></div>
+</div>
+
+<div class="seccion-salida">
+    <div class="titulo-salida">Melodía aleatoria · Do mayor</div>
+    <div id="melodia" class="linea-salida"></div>
+</div>
+
+</div>
+<script>
+const morse={
+"A":".-","B":"-...","C":"-.-.","D":"-..","E":".","F":"..-.","G":"--.","H":"....",
+"I":"..","J":".---","K":"-.-","L":".-..","M":"--","N":"-.","Ñ":"--.--","O":"---",
+"P":".--.","Q":"--.-","R":".-.","S":"...","T":"-","U":"..-","V":"...-","W":".--",
+"X":"-..-","Y":"-.--","Z":"--..","0":"-----","1":".----","2":"..---","3":"...--",
+"4":"....-","5":".....","6":"-....","7":"--...","8":"---..","9":"----."
+};
+function quitarTildes(texto){return texto.normalize("NFD").replace(/[\u0300-\u036f]/g,"")}
+document.getElementById("entrada").addEventListener("input",mostrarMorse);
+const frecuencias = {
+    "Do": 261.63,
+    "Re": 293.66,
+    "Mi": 329.63,
+    "Fa": 349.23,
+    "Sol": 392.00,
+    "La": 440.00,
+    "Si": 493.88,
+    "Do'": 523.25
+};
+
+function mostrarMorse() {
+    const texto = document.getElementById("entrada").value.toUpperCase();
+    const resultado = document.getElementById("resultado");
+    const ritmo = document.getElementById("ritmo");
+    const melodia = document.getElementById("melodia");
+
+    resultado.innerHTML = "";
+    let ritmoContinuo = "";
+
+    for (const caracter of texto) {
+        const letra = caracter.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+        if (morse[letra]) {
+            const bloque = document.createElement("div");
+            bloque.className = "bloque";
+
+            const codigo = document.createElement("div");
+            codigo.className = "codigo";
+            codigo.innerHTML = morse[letra].split("").map(simbolo =>
+                simbolo === "-" 
+                    ? '<span class="raya-morse">−</span>'
+                    : '<span class="punto-morse">·</span>'
+            ).join("");
+
+            const letraDiv = document.createElement("div");
+            letraDiv.className = "letra";
+            letraDiv.textContent = caracter;
+
+            bloque.appendChild(codigo);
+            bloque.appendChild(letraDiv);
+            resultado.appendChild(bloque);
+
+            ritmoContinuo += morse[letra];
+        }
+    }
+
+    ritmo.innerHTML = ritmoContinuo.split("").map(simbolo =>
+        simbolo === "-"
+            ? '<span class="raya-ritmo">−</span>'
+            : '<span class="punto-ritmo">·</span>'
+    ).join("");
+
+    // La melodía solo aparece después de pulsar "Generar melodía".
+    melodia.textContent = "";
+    window.secuenciaNotasMorse = null;
+    window.secuenciaRitmoMorse = null;
+    document.getElementById("btnNotas").disabled = true;
+}
+
+let audioContext = null;
+let reproduciendo = false;
+
+function esperar(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function reproducirMorse() {
+
+    if (reproduciendo) return;
+
+    const texto = quitarTildes(
+        document.getElementById("entrada").value.toUpperCase()
+    );
+
+    if (!texto.trim()) return;
+
+    reproduciendo = true;
+
+    const botonPlay = document.querySelector('.botones button');
+    const textoOriginal = botonPlay.textContent;
+    botonPlay.textContent = "⏹ Reproduciendo...";
+
+    // Crear el contexto de audio después de la pulsación del usuario
+    if (!audioContext) {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    }
+
+    if (audioContext.state === "suspended") {
+        await audioContext.resume();
+    }
+
+    // Duración de un punto Morse, en milisegundos
+    const unidad = 120;
+
+    async function sonido(duracion) {
+
+        const oscilador = audioContext.createOscillator();
+        const ganancia = audioContext.createGain();
+
+        oscilador.frequency.value = 700;
+        oscilador.type = "sine";
+
+        ganancia.gain.setValueAtTime(0.0001, audioContext.currentTime);
+        ganancia.gain.exponentialRampToValueAtTime(
+            0.35,
+            audioContext.currentTime + 0.01
+        );
+
+        oscilador.connect(ganancia);
+        ganancia.connect(audioContext.destination);
+
+        oscilador.start();
+
+        await esperar(duracion);
+
+        ganancia.gain.exponentialRampToValueAtTime(
+            0.0001,
+            audioContext.currentTime + 0.01
+        );
+
+        oscilador.stop(audioContext.currentTime + 0.02);
+
+        await esperar(20);
+    }
+
+    try {
+
+        for (let i = 0; i < texto.length; i++) {
+
+            const caracter = texto[i];
+
+            // Separación entre palabras
+            if (caracter === " ") {
+                await esperar(unidad * 7);
+                continue;
+            }
+
+            // Ignorar saltos de línea
+            if (caracter === "\n") {
+                await esperar(unidad * 7);
+                continue;
+            }
+
+            const codigo = morse[caracter];
+
+            if (!codigo) continue;
+
+            // Reproducir cada punto/raya
+            for (let j = 0; j < codigo.length; j++) {
+
+                if (codigo[j] === ".") {
+                    await sonido(unidad);
+                } else if (codigo[j] === "-") {
+                    await sonido(unidad * 3);
+                }
+
+                // Separación entre elementos de una misma letra
+                if (j < codigo.length - 1) {
+                    await esperar(unidad);
+                }
+            }
+
+            // Separación entre letras
+            await esperar(unidad * 3);
+        }
+
+    } finally {
+
+        reproduciendo = false;
+        botonPlay.textContent = textoOriginal;
+    }
+}
+
+
+async function reproducirRitmo(){
+
+if(reproduciendo)return;
+
+const texto=quitarTildes(document.getElementById("entrada").value.toUpperCase());
+if(!texto.trim())return;
+
+let secuencia="";
+for(const caracter of texto){
+if(morse[caracter])secuencia+=morse[caracter];
+}
+if(!secuencia)return;
+
+reproduciendo=true;
+
+const botones=document.querySelectorAll(".botones button");
+const botonRitmo=botones[1];
+const textoOriginal=botonRitmo.textContent;
+botonRitmo.textContent="⏹ Reproduciendo...";
+
+if(!audioContext){
+audioContext=new (window.AudioContext||window.webkitAudioContext)();
+}
+if(audioContext.state==="suspended")await audioContext.resume();
+
+// Raya = negra (600 ms), punto = corchea (300 ms).
+// No hay silencios entre letras: toda la secuencia es un ritmo continuo.
+const negra=600;
+const corchea=300;
+
+async function golpeTambor(duracion){
+const ahora=audioContext.currentTime;
+const oscilador=audioContext.createOscillator();
+const ganancia=audioContext.createGain();
+
+oscilador.type="sine";
+oscilador.frequency.setValueAtTime(140,ahora);
+oscilador.frequency.exponentialRampToValueAtTime(65,ahora+0.10);
+
+ganancia.gain.setValueAtTime(0.0001,ahora);
+ganancia.gain.exponentialRampToValueAtTime(0.8,ahora+0.005);
+ganancia.gain.exponentialRampToValueAtTime(0.0001,ahora+Math.min(0.18,duracion*0.75));
+
+oscilador.connect(ganancia);
+ganancia.connect(audioContext.destination);
+oscilador.start(ahora);
+oscilador.stop(ahora+Math.min(0.20,duracion*0.8));
+
+await esperar(duracion);
+}
+
+try{
+for(const simbolo of secuencia){
+if(simbolo===".")await golpeTambor(corchea);
+else await golpeTambor(negra);
+}
+}finally{
+reproduciendo=false;
+botonRitmo.textContent=textoOriginal;
+}
+}
+
+function generarMelodia() {
+    const texto = document.getElementById("entrada").value.toUpperCase();
+    if (!texto.trim()) return;
+
+    // Actualizamos Morse y ritmo.
+    mostrarMorse();
+
+    const simbolos = [];
+    for (const caracter of texto) {
+        const letra = caracter.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        if (morse[letra]) {
+            simbolos.push(...morse[letra].split(""));
+        }
+    }
+
+    if (!simbolos.length) return;
+
+    const escala = ["Do", "Re", "Mi", "Fa", "Sol", "La", "Si", "Do'"];
+    const notas = simbolos.map(() =>
+        escala[Math.floor(Math.random() * escala.length)]
+    );
+
+    window.secuenciaNotasMorse = notas;
+    window.secuenciaRitmoMorse = simbolos;
+
+    // Mostramos cada nota con su figura rítmica encima:
+    // · = corchea (♪), − = negra (♩)
+    const melodia = document.getElementById("melodia");
+    melodia.innerHTML = "";
+
+    notas.forEach((nota, i) => {
+        const contenedor = document.createElement("span");
+        contenedor.className = "nota-melodia";
+
+        const figura = document.createElement("span");
+        figura.className = "figura-nota";
+        figura.textContent = simbolos[i] === "." ? "♪" : "♩";
+
+        const nombre = document.createElement("span");
+        nombre.className = "nombre-nota";
+        nombre.textContent = nota;
+
+        contenedor.appendChild(figura);
+        contenedor.appendChild(nombre);
+        melodia.appendChild(contenedor);
+    });
+
+    document.getElementById("btnNotas").disabled = false;
+}
+
+async function reproducirNotas() {
+    const notas = window.secuenciaNotasMorse;
+    const ritmos = window.secuenciaRitmoMorse;
+
+    if (!notas || !ritmos || !notas.length) return;
+
+    if (window.reproduciendoNotas) {
+        window.detenerNotas = true;
+        return;
+    }
+
+    window.reproduciendoNotas = true;
+    window.detenerNotas = false;
+
+    const boton = document.getElementById("btnNotas");
+    boton.textContent = "⏹ Parar";
+
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    await ctx.resume();
+
+    // 100 BPM: negra = 600 ms; corchea = 300 ms.
+    const NEGRA = 600;
+    const CORCHEA = 300;
+
+    for (let i = 0; i < notas.length; i++) {
+        if (window.detenerNotas) break;
+
+        // Punto Morse = sonido corto = corchea.
+        // Raya Morse = sonido largo = negra.
+        const duracion = ritmos[i] === "." ? CORCHEA : NEGRA;
+        const frecuencia = frecuencias[notas[i]];
+
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.type = "triangle";
+        osc.frequency.setValueAtTime(frecuencia, ctx.currentTime);
+        gain.gain.setValueAtTime(0.28, ctx.currentTime);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        const inicio = ctx.currentTime;
+        const fin = inicio + duracion / 1000;
+
+        osc.start(inicio);
+        osc.stop(fin);
+
+        // La siguiente nota comienza exactamente al terminar esta.
+        await esperar(duracion);
+    }
+
+    try {
+        await ctx.close();
+    } catch (e) {}
+
+    window.reproduciendoNotas = false;
+    window.detenerNotas = false;
+    boton.textContent = "🎵 Notas";
+}
+
+function borrarTexto(){document.getElementById("entrada").value="";mostrarMorse();document.getElementById("entrada").focus();}
+function borrar(){borrarTexto()}
+document.addEventListener("DOMContentLoaded", () => {
+    mostrarMorse();
+});
+</script>
+</body>
+</html>
